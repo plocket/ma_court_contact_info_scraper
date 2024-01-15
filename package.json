@@ -1,0 +1,15 @@
+{
+  "name": "ma_court_contact_info_scraper",
+  "version": "0.1.0",
+  "description": "Rudimentary scraping of MA court websites for their contact details.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "plocket",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^21.7.0"
+  }
+}
