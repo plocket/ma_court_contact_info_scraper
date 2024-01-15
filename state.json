@@ -1,7 +1,10 @@
 {
   "collection_index": 0,
   "test_urls_to_collect": [
-    "https://www.mass.gov/locations/barnstable-district-court"
+    "https://www.mass.gov/locations/barnstable-district-court",
+    "https://www.mass.gov/locations/great-barrington-juvenile-court",
+    "https://www.mass.gov/locations/bristol-probate-and-family-court",
+    "https://www.mass.gov/locations/southeast-housing-court-barnstable-session"
   ],
   "urls_to_collect": [
     "https://www.mass.gov/locations/barnstable-district-court",

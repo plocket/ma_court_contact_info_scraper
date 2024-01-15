@@ -11,6 +11,9 @@ const fs = require(`fs`);
  * [{
  *   url: str,
  *   name: str,
+ *   description: str,
+ *   hours: str,
+ *
  *   physical_address: str,
  *   mailing_address: str,
  *   phone_1_number: str,
@@ -21,9 +24,7 @@ const fs = require(`fs`);
  *   phone_n_label: str,
  *   fax: str,
  *   notes: str,
- *   description: str,
  *   ada_coordinators: [str],
- *   hours: str,
  * }]
  * */
 
@@ -101,6 +102,7 @@ async function collect_court({ url }) {
   court.name = await get_name();
   court.description = await get_description();
   court.hours = await get_hours();
+  court.physical_address = await get_physical_address();
 
   return court;
 };
@@ -130,6 +132,18 @@ async function get_hours() {
   let clean = raw.replace(/\n/g, ``).replace(/\s+/g, ` `);
   return clean
 };
+
+async function get_physical_address() {
+  log.debug(`get_name()`);
+  return await get_text({
+    selector: `.ma__contact-group__address`,
+    throw_on_error: true,
+  });
+  // let clean = raw.replace(/\n/g, ``).replace(/\s+/g, ` `);
+  // return clean
+};
+
+
 
 // ===============================
 // =========== generic ===========
