@@ -13,6 +13,7 @@ const fs = require(`fs`);
  *   name: str,
  *   description: str,
  *   hours: str,
+ *   ada_coordinators: [str],
  *
  *   physical_address: str,
  *   mailing_address: str,
@@ -24,12 +25,13 @@ const fs = require(`fs`);
  *   phone_n_label: str,
  *   fax: str,
  *   notes: str,
- *   ada_coordinators: [str],
  * }]
  * */
 
 let debug = true;
 
+// const URLS = JSON.parse(fs.readFileSync(`./urls.json`));
+const URLS = JSON.parse(fs.readFileSync(`./test_urls.json`));
 let state = JSON.parse(fs.readFileSync(`./state.json`));
 let page = null;
 
@@ -39,7 +41,7 @@ async function start() {
   log.debug(`start()`);
 
   try {
-    await collect_all({urls: state.test_urls_to_collect});
+    await collect_all({ urls: URLS });
   } catch (error) {
     `red \x1b[31m reset \x1b[0m`
     console.log(`\x1b[31mERROR at ${new Date().toLocaleString()}\x1b[0m`);
@@ -74,20 +76,20 @@ async function collect_all({ urls }) {
   log.debug(`collect_all()`);
 
   const browser = await puppeteer.launch({
-    // Have to interact with the browser prompt manually
-    headless: !debug,
-    devtools: debug,
+    // // Have to interact with the browser prompt manually
+    // headless: !debug,
+    // devtools: debug,
   });
   page = await browser.newPage();
 
-  console.log(`Starting with \x1b[94m${ urls[0] }\x1b[0m. ${ state.urls_to_collect.length - state.collection_index } courts remaining`);
+  console.log(`Starting with \x1b[94m${ urls[0] }\x1b[0m. ${ URLS.length - state.collection_index } courts remaining`);
   console.log(`Current date and time: ${new Date().toLocaleString()}`);
-
-  let remaining_urls = state.test_urls_to_collect.slice(state.collection_index);
+  
+  let remaining_urls = URLS.slice(state.collection_index);
 
   for ( let url of remaining_urls ) {
     let court = await collect_court({ url });
-    log.debug( JSON.stringify( court ));
+    log.debug( JSON.stringify( court.ada_coordinators ));
   }
 
   await browser.close();
@@ -103,6 +105,7 @@ async function collect_court({ url }) {
   court.description = await get_description();
   court.hours = await get_hours();
   court.physical_address = await get_physical_address();
+  court.ada_coordinators = await get_adas();
 
   return court;
 };
@@ -112,48 +115,78 @@ async function get_name() {
   return await get_text({
     selector: `h1.ma__page-header__title`,
     throw_on_error: true,
+    multi: false,
   });
 };
 
 async function get_description() {
-  log.debug(`get_name()`);
+  log.debug(`get_description()`);
   return await get_text({
     selector: `#overview + *`,
     throw_on_error: true,
+    multi: false,
   });
 };
 
 async function get_hours() {
-  log.debug(`get_name()`);
+  log.debug(`get_hours()`);
   let raw = await get_text({
     selector: `#hours + *`,
     throw_on_error: true,
+    multi: false,
   });
   let clean = raw.replace(/\n/g, ``).replace(/\s+/g, ` `);
   return clean
 };
 
 async function get_physical_address() {
-  log.debug(`get_name()`);
+  log.debug(`get_physical_address()`);
   return await get_text({
     selector: `.ma__contact-group__address`,
+    // Does every site include the address in the right place?
     throw_on_error: true,
+    multi: false,
   });
-  // let clean = raw.replace(/\n/g, ``).replace(/\s+/g, ` `);
-  // return clean
 };
+
+async function get_adas() {
+  log.debug(`get_adas()`);
+  let text = await get_text({
+    selector: `#accessibility + * strong`,
+    throw_on_error: false,
+    multi: true,
+  });
+  if ( !text ) { text = `No names detected`; }
+  return text;
+};
+
+// async function get_phones() {
+//   log.debug(`get_phones()`);
+
+
+
+//   let text = await get_text({
+//     selector: `#accessibility + * strong`,
+//     throw_on_error: false,
+//     multi: true,
+//   });
+//   if ( !text ) { text = `No names detected`; }
+//   return text;
+// };
 
 
 
 // ===============================
 // =========== generic ===========
-async function get_text({ selector, throw_on_error=false }) {
+async function get_text ({ selector, throw_on_error=false, multi=false }) {
   log.debug(`get_text()`);
 
   try {
-    let handle = await page.$(selector);
-    let text = await handle.evaluate(el => el.textContent);
-    return text.trim();
+    if ( multi ) {
+      return await get_text_multi({ selector });
+    } else {
+      return await get_text_one({ selector });
+    }
   } catch (error) {
     if ( throw_on_error ) {
       throw error;
@@ -164,6 +197,21 @@ async function get_text({ selector, throw_on_error=false }) {
   }  // ends try to get text
 };
 
+async function get_text_one ({ selector }) {
+  log.debug(`get_text_one()`);
+  let handle = await page.$(selector);
+  let text = await handle.evaluate(el => el.textContent);
+  return text.trim();
+};
+
+async function get_text_multi ({ selector }) {
+  log.debug(`get_text_multi()`);
+  const combined_text = await page.evaluate((selector) => {
+    let elements = Array.from(document.querySelectorAll(selector));
+    return elements.map(element => element.textContent).join(`, `);
+  }, selector);
+  return combined_text.trim();
+};
 
 // ============================
 // =========== data ===========
