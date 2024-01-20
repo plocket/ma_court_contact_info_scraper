@@ -170,7 +170,6 @@ async function get_notes() {
   log.debug(`get_notes()`);
   // Maybe any text content that includes "note"? Or "please" (might over-collect)?
 
-  // Gets items: `//*[contains(concat(' ',normalize-space(@class),' '),' ma__contact-group__address ')]/ancestor::*[contains(concat(' ',normalize-space(@class),' '),' ma__contact-group__item ')]/span`
   // Start with address
   let x_selector = `//*[contains(concat(' ',normalize-space(@class),' '),' ma__contact-group__address ')]`;
   // Get adress parent
@@ -466,7 +465,7 @@ function save_court ({ court }) {
   //   log.debug(`${ phone.number };${ phone.label };${ phone.has_clerk };`);
   // }
   log.debug(`Num phones:`, court.phones.length);
-  for ( let phone_i = 0; phone_i <= max_num_phones; phone_i++ ) {
+  for ( let phone_i = 0; phone_i < max_num_phones; phone_i++ ) {
     let phone = court.phones[ phone_i ];
     if ( phone ) {
       new_line += `${ phone.number };${ phone.label };${ phone.has_clerk };`;
@@ -480,7 +479,7 @@ function save_court ({ court }) {
   //   log.debug(`${ fax.number };${ fax.label };${ fax.has_clerk };`);
   // }
   log.debug(`Num faxes:`, court.faxes.length);
-  for ( let fax_i = 0; fax_i <= max_num_faxes; fax_i++ ) {
+  for ( let fax_i = 0; fax_i < max_num_faxes; fax_i++ ) {
     let fax = court.faxes[ fax_i ];
     log.debug(`faxes[${fax_i}]: ${JSON.stringify(fax)}`)
     if ( fax ) {
