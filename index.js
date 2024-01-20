@@ -83,6 +83,7 @@ async function collect_all({ urls }) {
     // // Have to interact with the browser prompt manually
     // headless: !debug,
     // devtools: debug,
+    // slowMo: 250, // slow down by 250ms
   });
   page = await browser.newPage();
   `blue \x1b[94m reset \x1b[0m`
